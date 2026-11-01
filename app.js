@@ -13,6 +13,9 @@
   let voices = [];
   let chosenVoice = null;
 
+  document.getElementById("bot-name").textContent = PROFILE.name + " — Voice Bot";
+  document.getElementById("bot-tagline").textContent = PROFILE.tagline;
+
   // ---------- setup suggested question chips ----------
   QA.forEach((item) => {
     const chip = document.createElement("button");
@@ -28,6 +31,16 @@
     return str.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
   }
 
+  function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function hasKeyword(norm, kw) {
+    const kwNorm = normalize(kw);
+    if (!kwNorm) return false;
+    return new RegExp("\\b" + escapeRegExp(kwNorm) + "\\b").test(norm);
+  }
+
   function bestMatch(rawQuestion) {
     const norm = normalize(rawQuestion);
     let best = null;
@@ -36,7 +49,7 @@
       let score = 0;
       if (normalize(item.question) === norm) score += 5;
       for (const kw of item.keywords) {
-        if (norm.includes(normalize(kw))) score += 2;
+        if (hasKeyword(norm, kw)) score += 2;
       }
       if (score > bestScore) {
         bestScore = score;
@@ -44,6 +57,19 @@
       }
     }
     return bestScore >= 2 ? best : null;
+  }
+
+  // ---------- answer variation ----------
+  const lastAnswerIndex = {};
+
+  function pickAnswer(list, key) {
+    if (list.length === 1) return list[0];
+    let idx = Math.floor(Math.random() * list.length);
+    if (list.length > 1 && idx === lastAnswerIndex[key]) {
+      idx = (idx + 1) % list.length;
+    }
+    lastAnswerIndex[key] = idx;
+    return list[idx];
   }
 
   // ---------- transcript rendering ----------
@@ -95,7 +121,7 @@
     if (!text) return;
     addBubble("user", text);
     const match = matchedItemOverride || bestMatch(text);
-    const answer = match ? match.answer : FALLBACK_ANSWER;
+    const answer = match ? pickAnswer(match.answers, match.id) : pickAnswer(FALLBACK_ANSWERS, "__fallback__");
     addBubble("bot", answer);
     speak(answer);
     inputEl.value = "";
