@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Akshat Mishra — Voice Bot</title>
+  <meta name="description" content="An interactive voice bot that answers interview-style questions as Akshat Mishra would." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="avatar" id="avatar">AM</div>
+      <div>
+        <h1 id="bot-name">Akshat Mishra — Voice Bot</h1>
+        <p id="bot-tagline">Ask me the interview-guide questions, out loud or by typing.</p>
+      </div>
+    </div>
+
+    <div class="notice" id="voice-notice" style="display:none;"></div>
+
+    <div class="card">
+      <div class="transcript" id="transcript">
+        <div class="empty-state">Your conversation will appear here.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="input-row">
+        <button class="icon-btn" id="mic-btn" title="Ask by voice">🎤</button>
+        <input type="text" id="text-input" placeholder="Type a question, e.g. “What's your #1 superpower?”" autocomplete="off" />
+        <button class="icon-btn primary" id="ask-btn" title="Ask">➤</button>
+        <button class="icon-btn" id="mute-btn" title="Mute/unmute spoken answers">🔊</button>
+      </div>
+      <div class="controls-row">
+        <div class="status" id="status"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toggle-row" style="margin-bottom:10px;">Suggested questions</div>
+      <div class="suggestions" id="suggestions"></div>
+    </div>
+
+    <footer>Runs entirely in your browser — no sign-up, no API key, no install.</footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
