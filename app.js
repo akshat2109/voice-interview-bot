@@ -38,16 +38,12 @@
       for (const kw of item.keywords) {
         if (norm.includes(normalize(kw))) score += 2;
       }
-      const words = norm.split(" ");
-      for (const w of words) {
-        if (w.length > 3 && normalize(item.question).includes(w)) score += 0.2;
-      }
       if (score > bestScore) {
         bestScore = score;
         best = item;
       }
     }
-    return bestScore > 0 ? best : null;
+    return bestScore >= 2 ? best : null;
   }
 
   // ---------- transcript rendering ----------
