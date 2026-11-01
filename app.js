@@ -17,7 +17,7 @@
   document.getElementById("bot-tagline").textContent = PROFILE.tagline;
 
   // ---------- setup suggested question chips ----------
-  QA.forEach((item) => {
+  QA.filter((item) => !item.hideFromSuggestions).forEach((item) => {
     const chip = document.createElement("button");
     chip.className = "chip";
     chip.type = "button";
