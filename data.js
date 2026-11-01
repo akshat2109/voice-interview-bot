@@ -87,3 +87,33 @@ const FALLBACK_ANSWERS = [
   "That's not one of my prepared answers — try asking about my life story, my superpower, where I want to grow, a misconception people have about me, how I push my limits, or whether I'd be a good fit for the role.",
   "I don't have that one prepared. Try one of the suggested questions below, or ask me directly whether I'd be a good fit for a Java backend or AI engineering role.",
 ];
+
+// Grounding material for the live LLM (see api/ask.js) — raw facts it can pull
+// from and recombine, rather than a fixed script. Keep each one true and
+// specific; the system prompt tells the model to cite only a few per answer.
+const FACTS = [
+  "Software Engineer at Live Your Best Life, a digital healthcare platform, since August 2023; started there as an intern in January 2023.",
+  "CS degree from IIIT Dharwad (2019–2023), 8.49 CGPA.",
+  "Built a RAG pipeline (InfluxDB + LangChain4j orchestrating Anthropic Claude) that extracts clinical biomarkers from wearable data, lifting user engagement ~55%.",
+  "Built an agentic medical chatbot on the OpenAI Assistants API that resolves patient queries and lifted recommended supplement sales ~45%.",
+  "Built an inventory service integrated with Shopify APIs/webhooks using Kafka event streaming, guaranteeing 100% data consistency across distributed services.",
+  "Built a notification routing service (client factory pattern, Spring Scheduled/Cron jobs) dispatching 50K+ daily push/email/SMS alerts.",
+  "Helped architect an enterprise API Gateway with Spring Cloud Gateway, centralizing routing, load balancing, and auth across millions of weekly requests.",
+  "Built a real-time doctor-patient inbox messaging service with Kafka and MongoDB, processing 100K+ daily events without data loss.",
+  "Built a payment gateway integrating Stripe, processing $850K+ and managing automated billing lifecycles.",
+  "Built centralized access control with Spring Security and Resilience4j (rate limiting, circuit breakers), contributing to 99.99% availability.",
+  "Used AWS EC2, S3, and CloudFront for auto-scaling compute and edge delivery, cutting client-side load times ~50%.",
+  "Designed a graph-based questionnaire engine using a state machine pattern for personalized user evaluation flows.",
+  "Containerized a fault-tolerant ETL pipeline with Docker, Airflow, and Airbyte, syncing 5TB/day into ClickHouse for sub-second analytics.",
+  "Built a centralized OAuth2 (Google/Apple) authentication service with OTP, JWT session management, and CAPTCHA verification.",
+  "Set up Prometheus + Grafana observability, cutting incident resolution time ~65%.",
+  "Used JMeter load testing plus JUnit/Mockito to improve API latency ~45%.",
+  "Built cross-platform Flutter/Dart mobile apps, shipping UI improvements and fixing 800+ bugs — secondary to backend/AI work, only worth mentioning if asked about frontend or mobile specifically.",
+];
+
+// Node (the /api/ask.js serverless function) needs these via require(); the
+// browser just uses the globals above, since this file is loaded as a plain
+// <script> there, not as a module.
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { PROFILE, QA, FALLBACK_ANSWERS, FACTS };
+}

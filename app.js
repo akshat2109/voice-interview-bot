@@ -23,7 +23,7 @@
     chip.className = "chip";
     chip.type = "button";
     chip.textContent = item.question;
-    chip.addEventListener("click", () => handleQuestion(item.question, item));
+    chip.addEventListener("click", () => handleQuestion(item.question));
     suggestionsEl.appendChild(chip);
   });
 
@@ -86,6 +86,14 @@
     bubble.textContent = text;
     transcriptEl.appendChild(bubble);
     transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    return bubble;
+  }
+
+  function addTypingBubble() {
+    const bubble = addBubble("bot", "");
+    bubble.classList.add("typing");
+    bubble.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+    return bubble;
   }
 
   // ---------- speech synthesis ----------
@@ -183,16 +191,42 @@
     window.speechSynthesis.speak(utter);
   }
 
+  // ---------- offline fallback (used only if the live API call fails) ----------
+  function offlineAnswer(text) {
+    const match = bestMatch(text);
+    return match ? pickAnswer(match.answers, match.id) : pickAnswer(FALLBACK_ANSWERS, "__fallback__");
+  }
+
+  async function askLLM(text) {
+    const response = await fetch("/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: text }),
+    });
+    if (!response.ok) throw new Error("API error " + response.status);
+    const data = await response.json();
+    if (!data.answer) throw new Error("Empty answer");
+    return data.answer;
+  }
+
   // ---------- main handler ----------
-  function handleQuestion(questionText, matchedItemOverride) {
+  async function handleQuestion(questionText) {
     const text = questionText.trim();
     if (!text) return;
     addBubble("user", text);
-    const match = matchedItemOverride || bestMatch(text);
-    const answer = match ? pickAnswer(match.answers, match.id) : pickAnswer(FALLBACK_ANSWERS, "__fallback__");
+    inputEl.value = "";
+    const typingBubble = addTypingBubble();
+
+    let answer;
+    try {
+      answer = await askLLM(text);
+    } catch (e) {
+      answer = offlineAnswer(text);
+    }
+
+    typingBubble.remove();
     addBubble("bot", answer);
     speak(answer);
-    inputEl.value = "";
   }
 
   askBtn.addEventListener("click", () => handleQuestion(inputEl.value));

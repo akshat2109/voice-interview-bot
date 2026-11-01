@@ -1,0 +1,8 @@
+{
+  "name": "voice-interview-bot",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0"
+  }
+}
