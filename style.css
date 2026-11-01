@@ -220,6 +220,21 @@ button.primary {
   min-height: 16px;
 }
 
+.voice-select {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  max-width: 200px;
+  outline: none;
+}
+
+.voice-select:focus {
+  border-color: var(--accent);
+}
+
 .status.live {
   color: var(--ok);
 }

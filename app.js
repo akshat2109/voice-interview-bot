@@ -8,6 +8,7 @@
   const avatarEl = document.getElementById("avatar");
   const suggestionsEl = document.getElementById("suggestions");
   const voiceNotice = document.getElementById("voice-notice");
+  const voiceSelect = document.getElementById("voice-select");
 
   let muted = false;
   let voices = [];
@@ -88,18 +89,85 @@
   }
 
   // ---------- speech synthesis ----------
+  // Preferred-by-name list of voices that tend to sound clear and light rather
+  // than deep/heavy, roughly in priority order across common platforms.
+  const PREFERRED_VOICE_NAMES = [
+    "samantha", "google us english", "microsoft aria", "microsoft jenny",
+    "zira", "victoria", "moira", "karen", "tessa", "google uk english female",
+    "fiona", "veena", "female",
+  ];
+
+  function voiceScore(v) {
+    const name = v.name.toLowerCase();
+    const isEnglish = /^en/.test(v.lang);
+    let score = isEnglish ? 1 : 0;
+    const prefIndex = PREFERRED_VOICE_NAMES.findIndex((p) => name.includes(p));
+    if (prefIndex !== -1) score += (PREFERRED_VOICE_NAMES.length - prefIndex) * 10;
+    return score;
+  }
+
+  function savedVoiceName() {
+    try {
+      return localStorage.getItem("voicebot_voice_name");
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveVoiceName(name) {
+    try {
+      localStorage.setItem("voicebot_voice_name", name);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function populateVoiceSelect() {
+    if (!voiceSelect) return;
+    const prevValue = voiceSelect.value;
+    const englishVoices = voices.filter((v) => /^en/.test(v.lang));
+    const listedVoices = (englishVoices.length ? englishVoices : voices)
+      .slice()
+      .sort((a, b) => voiceScore(b) - voiceScore(a));
+    voiceSelect.innerHTML = "";
+    listedVoices.forEach((v) => {
+      const opt = document.createElement("option");
+      opt.value = v.name;
+      opt.textContent = v.name + (v.lang ? " (" + v.lang + ")" : "");
+      voiceSelect.appendChild(opt);
+    });
+    const remembered = savedVoiceName();
+    const target = remembered && listedVoices.some((v) => v.name === remembered)
+      ? remembered
+      : (chosenVoice ? chosenVoice.name : prevValue);
+    if (target) voiceSelect.value = target;
+  }
+
   function loadVoices() {
     voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    if (!voices.length) return;
+    const remembered = savedVoiceName();
     chosenVoice =
-      voices.find((v) => /en-US|en_GB|en-GB/.test(v.lang) && v.localService) ||
-      voices.find((v) => /^en/.test(v.lang)) ||
-      voices[0] ||
+      (remembered && voices.find((v) => v.name === remembered)) ||
+      voices.slice().sort((a, b) => voiceScore(b) - voiceScore(a))[0] ||
       null;
+    populateVoiceSelect();
   }
 
   if (window.speechSynthesis) {
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  if (voiceSelect) {
+    voiceSelect.addEventListener("change", () => {
+      const picked = voices.find((v) => v.name === voiceSelect.value);
+      if (picked) {
+        chosenVoice = picked;
+        saveVoiceName(picked.name);
+        speak("Hi, this is how I sound now.");
+      }
+    });
   }
 
   function speak(text) {
@@ -108,7 +176,7 @@
     const utter = new SpeechSynthesisUtterance(text);
     if (chosenVoice) utter.voice = chosenVoice;
     utter.rate = 1;
-    utter.pitch = 1;
+    utter.pitch = 1.05;
     utter.onstart = () => avatarEl.classList.add("speaking");
     utter.onend = () => avatarEl.classList.remove("speaking");
     utter.onerror = () => avatarEl.classList.remove("speaking");
@@ -203,6 +271,7 @@
 
   if (!window.speechSynthesis) {
     muteBtn.disabled = true;
+    if (voiceSelect) voiceSelect.disabled = true;
     const n = voiceNotice.textContent ? voiceNotice.textContent + " " : "";
     voiceNotice.textContent = n + "Spoken answers aren't supported in this browser — answers will still appear as text.";
     voiceNotice.style.display = "block";
